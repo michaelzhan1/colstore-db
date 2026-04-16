@@ -3,6 +3,9 @@ tests/input
 tests/output
 tests/expected
 
+# Builds
+build/
+
 # Object files
 obj/*
 *.o

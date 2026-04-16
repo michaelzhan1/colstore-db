@@ -13,12 +13,21 @@ LIBS =
 INCLUDES = include
 
 # this is the DB server and client's unix socket path
-# Note: the extra backslash is for escaping the quotes for makefile format
 SOCK_PATH=\"/tmp/db_unix_socket\"
 
-####### Automatic dependency magic #######
+# Build output directories (root-level build/)
+BUILD_DIR ?= ../build
+BINDIR := $(BUILD_DIR)/bin
+OBJDIR := $(BUILD_DIR)/obj
+DEPSDIR := $(BUILD_DIR)/dep
+
+CLIENT_BIN := $(BINDIR)/client
+SERVER_BIN := $(BINDIR)/server
+
+OBJECTS := client.o server.o parse.o utils.o db_manager.o client_context.o
+OBJFILES := $(addprefix $(OBJDIR)/,$(OBJECTS))
+
 # Set-up dependency directory
-DEPSDIR := .deps
 BUILDSTAMP := $(DEPSDIR)/rebuildstamp
 DEPFILES := $(wildcard $(DEPSDIR)/*.d)
 ifneq ($(DEPFILES),)
@@ -36,31 +45,24 @@ $(DEPSDIR)/stamp $(BUILDSTAMP):
 	mkdir -p $(@D)
 	touch $@
 
-####### Automatic dependency magic #######
-
-%.o : %.c $(BUILDSTAMP)
+# force rebuild by buildstamp
+$(OBJDIR)/%.o : %.c $(BUILDSTAMP)
+	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -O$(O) -o $@ -c $<
 
-##
-# To include additional non-executable files (e.g. selects.c, utils.c, etc),
-# you'll need to add an additional build dependency to the file that requires
-# the new file.  For example, see that client and server both require utils.o
-#
-# If you create a new file such as selects.c, then you will need a "selects.o"
-# dependency on the right side of whichever one requires the file.
-##
-
-client: client.o utils.o
+# build client
+client: $(CLIENT_BIN)
+$(CLIENT_BIN): $(OBJDIR)/client.o $(OBJDIR)/utils.o
+	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-server: server.o parse.o utils.o db_manager.o client_context.o
+# build server
+server: $(SERVER_BIN)
+$(SERVER_BIN): $(OBJDIR)/server.o $(OBJDIR)/parse.o $(OBJDIR)/utils.o $(OBJDIR)/db_manager.o $(OBJDIR)/client_context.o
+	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 clean:
-	rm -f client server *.o *~ *.bak core *.core $(SOCK_PATH)
-	rm -rf .deps
+	rm -rf $(BUILD_DIR) *~ *.bak core *.core $(SOCK_PATH)
 
-distclean: clean
-	rm -rf $(DEPSDIR)
-
-.PHONY: all clean distclean
+.PHONY: all client server clean

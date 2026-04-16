@@ -40,3 +40,5 @@ clean:
 
 clean-tests:
 	rm -rf $(TEST_INPUT) $(TEST_EXPECTED)
+
+.PHONY: build test
