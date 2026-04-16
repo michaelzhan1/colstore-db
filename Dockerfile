@@ -1,4 +1,4 @@
-FROM python:3.13.13
+FROM ubuntu:24.04
 
 WORKDIR /app
 
@@ -17,16 +17,15 @@ RUN bash -c 'apt-get update && apt-get install -y \
     psmisc \
     tmux \
     valgrind \
-    strace \
-    linux-perf'
+    strace'
+
+# copy perf
+RUN bash -c 'apt-get install -y linux-tools-common linux-tools-generic && \
+    cd /usr/lib/linux-tools && \
+    cd `ls -1 | head -n1` && \
+    rm -f /usr/bin/perf && \
+    ln -s `pwd`/perf /usr/bin/perf'
 
 RUN bash -c 'rm -rf /var/lib/apt/lists/*'
-
-# used for test generation
-RUN bash -c 'pip install scipy pandas'
-
-# install tools like perf
-RUN bash -c 'apt-get update && apt-get install -y linux-perf && \
-    rm -rf /var/lib/apt/lists/*'
 
 CMD ["sleep", "infinity"]
