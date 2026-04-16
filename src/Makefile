@@ -1,8 +1,3 @@
-# CS165 MakeFile
-# This file includes automatic dependency tracking
-# Please see example of "utils" to see how to add additional file
-# to your project
-
 all: client server
 
 # C-compiler settings
@@ -17,10 +12,9 @@ LDFLAGS =
 LIBS =
 INCLUDES = include
 
-
 # this is the DB server and client's unix socket path
 # Note: the extra backslash is for escaping the quotes for makefile format
-SOCK_PATH=\"/tmp/cs165_unix_socket\"
+SOCK_PATH=\"/tmp/db_unix_socket\"
 
 ####### Automatic dependency magic #######
 # Set-up dependency directory

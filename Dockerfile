@@ -10,7 +10,6 @@ WORKDIR /app
 #   valgrind for memory issue debugging
 #   strace for stack profiling & debugging
 RUN bash -c 'apt-get update && apt-get install -y \
-    apt-utils \
     build-essential \
     gcc \
     curl \
@@ -18,14 +17,16 @@ RUN bash -c 'apt-get update && apt-get install -y \
     psmisc \
     tmux \
     valgrind \
-    strace'
+    strace \
+    linux-perf'
 
-# for test generation
+RUN bash -c 'rm -rf /var/lib/apt/lists/*'
+
+# used for test generation
 RUN bash -c 'pip install scipy pandas'
 
 # install tools like perf
 RUN bash -c 'apt-get update && apt-get install -y linux-perf && \
     rm -rf /var/lib/apt/lists/*'
 
-CMD cd src
-CMD make clean && make all && /bin/bash && tmux
+CMD ["sleep", "infinity"]

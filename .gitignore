@@ -1,5 +1,7 @@
-student_outputs
-generated_data
+# Test files
+tests/input
+tests/output
+tests/expected
 
 # Object files
 obj/*
@@ -21,15 +23,3 @@ obj/*
 bin/*
 server
 client
-.deps
-
-#ide stuff
-tags
-Tags
-*.swp
-
-# other
-r*hs # vtune output
-.deps # makefile temps
-
-status.current_container_id

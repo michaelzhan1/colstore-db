@@ -1,0 +1,1 @@
+DEP_CC:=gcc -std=c99 -g -ggdb3 -Wall -Wextra -pedantic -pthread -O0 -Iinclude -MD -MF ../build/dep/.d -MP -DSOCK_PATH="/tmp/db_unix_socket" 0
