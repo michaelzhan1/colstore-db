@@ -1,4 +1,5 @@
 # Test files
+tests/data
 tests/input
 tests/output
 tests/expected
@@ -26,3 +27,6 @@ obj/*
 bin/*
 server
 client
+
+# Python
+.venv

@@ -9,7 +9,7 @@ import struct
 import pandas as pd
 import math
 
-import data_gen_utils
+import tests.scripts.utils as utils
 
 # note this is the base path to the data files we generate
 TEST_BASE_DIR = "/cs165/generated_data"
@@ -23,7 +23,7 @@ DOCKER_TEST_BASE_DIR = "/cs165/staff_test"
 ############################################################################
 def generateDataMilestone5(dataSize):
     outputFile = TEST_BASE_DIR + '/data5.csv'
-    header_line = data_gen_utils.generateHeaderLine('db1', 'tbl5', 4)
+    header_line = utils.generateHeaderLine('db1', 'tbl5', 4)
     outputTable = pd.DataFrame(np.random.randint(0, dataSize/5, size=(dataSize, 4)), columns =['col1', 'col2', 'col3', 'col4'])
     # This is going to have many, many duplicates for large tables!!!!
     outputTable['col1'] = np.random.randint(0,1000, size = (dataSize))
@@ -36,7 +36,7 @@ def generateDataMilestone5(dataSize):
 
 def createTest60(dataTable):
     # prelude
-    output_file, exp_output_file = data_gen_utils.openFileHandles(60, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(60, test_dir=TEST_BASE_DIR)
     output_file.write('-- Correctness test: Do inserts in tbl5.\n')
     output_file.write('--\n')
     output_file.write('-- Let table tbl5 have a secondary index (col2) and a clustered index (col3), so, all should be maintained when we insert new data.\n')
@@ -86,11 +86,11 @@ def createTest60(dataTable):
     # dataTable = dataTable.append({"col1":-5, "col2":-55, "col3": -555, "col4": -2222}, ignore_index = True)
     
     # no expected results
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
     return dataTable
 
 def createTest61(dataTable, approxSelectivity):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(61, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(61, test_dir=TEST_BASE_DIR)
     dataSize = len(dataTable)
     offset = int(approxSelectivity * dataSize)
     highestHighVal = int((dataSize/2) - offset)
@@ -125,11 +125,11 @@ def createTest61(dataTable, approxSelectivity):
     if len(output) > 0:
         exp_output_file.write(output.to_string(header=False,index=False))
         exp_output_file.write('\n')
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 
 def createTests62(dataTable):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(62, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(62, test_dir=TEST_BASE_DIR)
     output_file.write('-- Correctness test: Update values\n')
     output_file.write('--\n')
     output_file.write('-- UPDATE tbl5 SET col1 = -10 WHERE col1 = -1;\n')
@@ -166,11 +166,11 @@ def createTests62(dataTable):
     dataTable.loc[dfSelectMaskEq,'col1']=-50
 
     # no expected results
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
     return dataTable
 
 def createTest63(dataTable):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(63, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(63, test_dir=TEST_BASE_DIR)
     selectValLess = np.random.randint(-200, -100)
     selectValGreater = np.random.randint(10, 100)
     output_file.write('-- Correctness test: Run query after inserts and updates\n')
@@ -184,11 +184,11 @@ def createTest63(dataTable):
     dfSelectMask = (dataTable['col2'] >= selectValLess) & (dataTable['col2'] < selectValGreater)
     output = dataTable[dfSelectMask]['col1']
     exp_output_file.write(output.to_string(header=False,index=False))
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 
 def createTest64(dataTable):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(64, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(64, test_dir=TEST_BASE_DIR)
     output_file.write('-- Correctness test: Delete values and run queries after inserts, updates, and deletes\n')
     output_file.write('--\n')
     output_file.write('-- DELETE FROM tbl5 WHERE col1 = -10;\n')
@@ -228,7 +228,7 @@ def createTest64(dataTable):
         exp_output_file.write(output.to_string(header=False,index=False))
         exp_output_file.write('\n')
 
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
     return dataTable
 
 def createRandomUpdates(dataTable, numberOfUpdates, output_file):
@@ -290,14 +290,14 @@ def createRandomSelects(dataTable, numberOfQueries, output_file, exp_output_file
         
 
 def createTest65(dataTable):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(65, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(65, test_dir=TEST_BASE_DIR)
     output_file.write('-- Scalability test: A large number of inserts, deletes and updates, followed by a number of queries\n')
     output_file.write('--\n')
     dataTable = createRandomInserts(dataTable, 100, output_file)
     dataTable = createRandomUpdates(dataTable, 100, output_file)
     dataTable = createRandomDeletes(dataTable, 100, output_file)
     createRandomSelects(dataTable, 5, output_file, exp_output_file)
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 
 

@@ -9,7 +9,7 @@ import struct
 import pandas as pd
 import math
 
-import data_gen_utils
+import tests.scripts.utils as utils
 
 # note this is the base path where we store the data files we generate
 TEST_BASE_DIR = "/cs165/generated_data"
@@ -36,9 +36,9 @@ def generateDataMilestone3(dataSize):
     outputFile_ctrl = TEST_BASE_DIR + '/' + 'data4_ctrl.csv'
     outputFile_btree = TEST_BASE_DIR + '/' + 'data4_btree.csv'
     outputFile_clustered_btree = TEST_BASE_DIR + '/' + 'data4_clustered_btree.csv'
-    header_line_ctrl = data_gen_utils.generateHeaderLine('db1', 'tbl4_ctrl', 4)
-    header_line_btree = data_gen_utils.generateHeaderLine('db1', 'tbl4', 4)
-    header_line_clustered_btree = data_gen_utils.generateHeaderLine('db1', 'tbl4_clustered_btree', 4)
+    header_line_ctrl = utils.generateHeaderLine('db1', 'tbl4_ctrl', 4)
+    header_line_btree = utils.generateHeaderLine('db1', 'tbl4', 4)
+    header_line_clustered_btree = utils.generateHeaderLine('db1', 'tbl4_clustered_btree', 4)
     outputTable = pd.DataFrame(np.random.randint(0, dataSize/5, size=(dataSize, 4)), columns =['col1', 'col2', 'col3', 'col4'])
     # This is going to have many, many duplicates for large tables!!!!
     outputTable['col1'] = np.random.randint(0,1000, size = (dataSize))
@@ -62,7 +62,7 @@ def generateDataMilestone3(dataSize):
 
 def createTest20():
     # prelude
-    output_file, exp_output_file = data_gen_utils.openFileHandles(20, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(20, test_dir=TEST_BASE_DIR)
     output_file.write('-- Create a control table that is identical to the one in test21.dsl, but\n')
     output_file.write('-- without any indexes\n')
     output_file.write('--\n')
@@ -81,10 +81,10 @@ def createTest20():
     output_file.write('-- Testing that the data and their indexes are durable on disk.\n')
     output_file.write('shutdown\n')
     # no expected results
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTest21():
-    output_file, exp_output_file = data_gen_utils.openFileHandles(21, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(21, test_dir=TEST_BASE_DIR)
     output_file.write('-- Test for creating table with indexes\n')
     output_file.write('--\n')
     output_file.write('-- Table tbl4 has a clustered index with col3 being the leading column.\n')
@@ -111,11 +111,11 @@ def createTest21():
     output_file.write('-- Testing that the data and their indexes are durable on disk.\n')
     output_file.write('shutdown\n')
     # no expected results
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTests22And23(dataTable, dataSize):
-    output_file22, exp_output_file22 = data_gen_utils.openFileHandles(22, TEST_DIR=TEST_BASE_DIR)
-    output_file23, exp_output_file23 = data_gen_utils.openFileHandles(23, TEST_DIR=TEST_BASE_DIR)
+    output_file22, exp_output_file22 = utils.openFileHandles(22, test_dir=TEST_BASE_DIR)
+    output_file23, exp_output_file23 = utils.openFileHandles(23, test_dir=TEST_BASE_DIR)
     output_file22.write('--\n')
     output_file22.write('-- Query in SQL:\n')
 
@@ -156,15 +156,15 @@ def createTests22And23(dataTable, dataSize):
     output1 = dataTable[dfSelectMask1]['col1']
     output2 = dataTable[dfSelectMask2]['col1']
     for exp_output_file in [exp_output_file22, exp_output_file23]:
-        exp_output_file.write(data_gen_utils.outputPrint(output1))
+        exp_output_file.write(utils.outputPrint(output1))
         exp_output_file.write('\n\n')
-        exp_output_file.write(data_gen_utils.outputPrint(output2))
+        exp_output_file.write(utils.outputPrint(output2))
         exp_output_file.write('\n')
-    data_gen_utils.closeFileHandles(output_file22, exp_output_file22)
-    data_gen_utils.closeFileHandles(output_file23, exp_output_file23)
+    utils.closeFileHandles(output_file22, exp_output_file22)
+    utils.closeFileHandles(output_file23, exp_output_file23)
 
 def createTest24(dataTable, dataSize):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(24, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(24, test_dir=TEST_BASE_DIR)
     offset = np.max([1, int(dataSize/10)])
     offset2 = 2000
     val1 = np.random.randint(0, int((dataSize/5) - offset))
@@ -188,14 +188,14 @@ def createTest24(dataTable, dataSize):
     dfSelectMask2High = dataTable['col2'] < (val2 + offset2)
     dfTotalMask = dfSelectMask1Low & dfSelectMask1High & dfSelectMask2Low & dfSelectMask2High
     values = dataTable[dfTotalMask]['col1']
-    exp_output_file.write(data_gen_utils.outputPrint(values))
+    exp_output_file.write(utils.outputPrint(values))
     exp_output_file.write('\n\n')
     exp_output_file.write(str(values.sum()) + '\n')
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTests25And26(dataTable, dataSize):
-    output_file25, exp_output_file25 = data_gen_utils.openFileHandles(25, TEST_DIR=TEST_BASE_DIR)
-    output_file26, exp_output_file26 = data_gen_utils.openFileHandles(26, TEST_DIR=TEST_BASE_DIR)
+    output_file25, exp_output_file25 = utils.openFileHandles(25, test_dir=TEST_BASE_DIR)
+    output_file26, exp_output_file26 = utils.openFileHandles(26, test_dir=TEST_BASE_DIR)
     offset = np.max([2, int(dataSize/1000)])
     output_file25.write('-- Test for a non-clustered index select followed by an aggregate (control-test)\n')
     output_file25.write('--\n')
@@ -227,11 +227,11 @@ def createTests25And26(dataTable, dataSize):
         else:
             exp_output_file25.write(str(sum_result) + '\n')
             exp_output_file26.write(str(sum_result) + '\n')
-    data_gen_utils.closeFileHandles(output_file25, exp_output_file25)
-    data_gen_utils.closeFileHandles(output_file26, exp_output_file26)
+    utils.closeFileHandles(output_file25, exp_output_file25)
+    utils.closeFileHandles(output_file26, exp_output_file26)
 
 def createTest27(dataTable, frequentVal1, frequentVal2):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(27, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(27, test_dir=TEST_BASE_DIR)
     output_file.write('-- Test for a clustered index select followed by a second predicate\n')
     output_file.write('--\n')
     output_file.write('-- Query in SQL:\n')
@@ -253,11 +253,11 @@ def createTest27(dataTable, frequentVal1, frequentVal2):
     result2 = dataTable[dfSelectMask2]['col1'].sum()
     exp_output_file.write(str(result1) + '\n')
     exp_output_file.write(str(result2) + '\n')
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTests28And29(dataTable, dataSize):
-    output_file28, exp_output_file28 = data_gen_utils.openFileHandles(28, TEST_DIR=TEST_BASE_DIR)
-    output_file29, exp_output_file29 = data_gen_utils.openFileHandles(29, TEST_DIR=TEST_BASE_DIR)
+    output_file28, exp_output_file28 = utils.openFileHandles(28, test_dir=TEST_BASE_DIR)
+    output_file29, exp_output_file29 = utils.openFileHandles(29, test_dir=TEST_BASE_DIR)
     offset = np.max([2, int(dataSize/500)])
     output_file28.write('-- Test for a non-clustered index select followed by an aggregate (control-test, many queries)\n')
     output_file28.write('-- Compare to test 29 for timing differences between B-tree and scan for highly selective queries\n')
@@ -290,11 +290,11 @@ def createTests28And29(dataTable, dataSize):
         else:
             exp_output_file28.write('{:0.2f}\n'.format(mean_result))
             exp_output_file29.write('{:0.2f}\n'.format(mean_result))
-    data_gen_utils.closeFileHandles(output_file28, exp_output_file28)
-    data_gen_utils.closeFileHandles(output_file29, exp_output_file29)
+    utils.closeFileHandles(output_file28, exp_output_file28)
+    utils.closeFileHandles(output_file29, exp_output_file29)
 
 def createTest30():
-    output_file, exp_output_file = data_gen_utils.openFileHandles(30, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(30, test_dir=TEST_BASE_DIR)
     output_file.write('-- Test for creating table with indexes\n')
     output_file.write('--\n')
     output_file.write('-- Table tbl4_clustered_btree has a clustered index with col3 being the leading column.\n')
@@ -321,10 +321,10 @@ def createTest30():
     output_file.write('-- Testing that the data and their indexes are durable on disk.\n')
     output_file.write('shutdown\n')
     # no expected results
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTest31(dataTable, dataSize):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(31, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(31, test_dir=TEST_BASE_DIR)
     output_file.write('--\n')
     output_file.write('-- Query in SQL:\n')
     # selectivity = 
@@ -353,14 +353,14 @@ def createTest31(dataTable, dataSize):
     dfSelectMask2 = (dataTable['col3'] >= val2) & (dataTable['col3'] < (val2 + offset2))
     output1 = dataTable[dfSelectMask1]['col1']
     output2 = dataTable[dfSelectMask2]['col1']
-    exp_output_file.write(data_gen_utils.outputPrint(output1))
+    exp_output_file.write(utils.outputPrint(output1))
     exp_output_file.write('\n\n')
-    exp_output_file.write(data_gen_utils.outputPrint(output2))
+    exp_output_file.write(utils.outputPrint(output2))
     exp_output_file.write('\n')
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTest32(dataTable, dataSize):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(32, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(32, test_dir=TEST_BASE_DIR)
     offset = np.max([2, int(dataSize/1000)])
     output_file.write('-- Test for a non-clustered index select followed by an aggregate\n')
     output_file.write('--\n')
@@ -381,7 +381,7 @@ def createTest32(dataTable, dataSize):
             exp_output_file.write('0\n')
         else:
             exp_output_file.write(str(sum_result) + '\n')
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTest33To38(dataTable, dataSize):
     table_names=['tbl4_ctrl','tbl4','tbl4_clustered_btree']
@@ -394,7 +394,7 @@ def createTest33To38(dataTable, dataSize):
     test_start=33
     for offset, selectivity in zip(offsets, selectivites):
         for table_name in table_names:
-            output_file, exp_output_file = data_gen_utils.openFileHandles(test_start, TEST_DIR=TEST_BASE_DIR)
+            output_file, exp_output_file = utils.openFileHandles(test_start, test_dir=TEST_BASE_DIR)
 
             output_file.write('--\n')
             output_file.write('-- selectivity={}\n'.format(selectivity))
@@ -420,7 +420,7 @@ def createTest33To38(dataTable, dataSize):
                     exp_output_file.write('{:0.2f}\n'.format(mean_result))
 
 
-            data_gen_utils.closeFileHandles(output_file, exp_output_file)
+            utils.closeFileHandles(output_file, exp_output_file)
             test_start += 1
 
 def createTest39To44(dataTable, dataSize):
@@ -434,7 +434,7 @@ def createTest39To44(dataTable, dataSize):
     test_start=39
     for offset, selectivity in zip(offsets, selectivites):
         for table_name in table_names:
-            output_file, exp_output_file = data_gen_utils.openFileHandles(test_start, TEST_DIR=TEST_BASE_DIR)
+            output_file, exp_output_file = utils.openFileHandles(test_start, test_dir=TEST_BASE_DIR)
 
             output_file.write('--\n')
             output_file.write('-- selectivity={}\n'.format(selectivity))
@@ -459,7 +459,7 @@ def createTest39To44(dataTable, dataSize):
                 else:
                     exp_output_file.write('{:0.2f}\n'.format(mean_result))
 
-            data_gen_utils.closeFileHandles(output_file, exp_output_file)
+            utils.closeFileHandles(output_file, exp_output_file)
             test_start += 1
 
 

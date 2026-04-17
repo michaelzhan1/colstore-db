@@ -9,7 +9,7 @@ import struct
 import pandas as pd
 import math
 
-import data_gen_utils
+import tests.scripts.utils as utils
 
 # note this is the base path where we store the data files we generate
 TEST_BASE_DIR = "/cs165/generated_data"
@@ -60,11 +60,11 @@ def generateDataMilestone4(dataSizeFact, dataSizeDim1, dataSizeDim2, dataSizeSel
     outputFile4 = TEST_BASE_DIR + '/' + 'data5_selectivity1.csv'
     outputFile5 = TEST_BASE_DIR + '/' + 'data5_selectivity2.csv'
 
-    header_line_fact = data_gen_utils.generateHeaderLine('db1', 'tbl5_fact', 4)
-    header_line_dim1 = data_gen_utils.generateHeaderLine('db1', 'tbl5_dim1', 3)
-    header_line_dim2 = data_gen_utils.generateHeaderLine('db1', 'tbl5_dim2', 2)
-    header_line_sel1 = data_gen_utils.generateHeaderLine('db1', 'tbl5_sel1', 2)
-    header_line_sel2 = data_gen_utils.generateHeaderLine('db1', 'tbl5_sel2', 2)
+    header_line_fact = utils.generateHeaderLine('db1', 'tbl5_fact', 4)
+    header_line_dim1 = utils.generateHeaderLine('db1', 'tbl5_dim1', 3)
+    header_line_dim2 = utils.generateHeaderLine('db1', 'tbl5_dim2', 2)
+    header_line_sel1 = utils.generateHeaderLine('db1', 'tbl5_sel1', 2)
+    header_line_sel2 = utils.generateHeaderLine('db1', 'tbl5_sel2', 2)
     outputFactTable = pd.DataFrame(np.random.randint(0, dataSizeFact/5, size=(dataSizeFact, 4)), columns =['col1', 'col2', 'col3', 'col4'])
     zipfDist = ZipfianDistribution(zipfianParam, numDistinctElements)
     # See Zipf's distribution (wikipedia) for a description of this distribution. 
@@ -94,7 +94,7 @@ def generateDataMilestone4(dataSizeFact, dataSizeDim1, dataSizeDim2, dataSizeSel
 
 def createTest45():
     # prelude
-    output_file, exp_output_file = data_gen_utils.openFileHandles(45, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(45, test_dir=TEST_BASE_DIR)
     output_file.write('-- Creates tables for join tests\n')
     output_file.write('-- without any indexes\n')
     output_file.write('create(tbl,"tbl5_fact",db1,4)\n')
@@ -128,10 +128,10 @@ def createTest45():
     output_file.write('-- Testing that the data and their indexes are durable on disk.\n')
     output_file.write('shutdown\n')
     # no expected results
-    data_gen_utils.closeFileHandles(output_file, exp_output_file)
+    utils.closeFileHandles(output_file, exp_output_file)
 
 def createTest46(factTable, dimTable2, dataSizeFact, dataSizeDim2, selectivityFact, selectivityDim2):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(46, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(46, test_dir=TEST_BASE_DIR)
     output_file.write('-- First join test - nested-loop. Select + Join + aggregation\n')   
     output_file.write('-- Performs the join using nested loops\n')
     output_file.write('-- Do this only on reasonable sized tables! (O(n^2))\n')
@@ -169,7 +169,7 @@ def createTest46(factTable, dimTable2, dataSizeFact, dataSizeDim2, selectivityFa
         exp_output_file.write('{}\n'.format(col3ValuesSum))
 
 def createTest47(factTable, dimTable2, dataSizeFact, dataSizeDim2, selectivityFact, selectivityDim2):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(47, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(47, test_dir=TEST_BASE_DIR)
     output_file.write('-- First join test - hash. Select + Join + aggregation\n')
     output_file.write('-- Performs the join using hashing\n')
     output_file.write('-- Query in SQL:\n')
@@ -204,7 +204,7 @@ def createTest47(factTable, dimTable2, dataSizeFact, dataSizeDim2, selectivityFa
         exp_output_file.write('{}\n'.format(col3ValuesSum))
 
 def createTest48(factTable, dimTable1, dataSizeFact, dataSizeDim1, selectivityFact, selectivityDim1):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(48, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(48, test_dir=TEST_BASE_DIR)
     output_file.write('-- Join test 2 - nested-loop. Select + Join + aggregation\n')
     output_file.write('-- Performs the join using nested loops\n')
     output_file.write('-- Do this only on reasonable sized tables! (O(n^2))\n')
@@ -240,7 +240,7 @@ def createTest48(factTable, dimTable1, dataSizeFact, dataSizeDim1, selectivityFa
         exp_output_file.write('{:0.2f}\n'.format(col1ValuesMean))
 
 def createTest49(factTable, dimTable1, dataSizeFact, dataSizeDim1, selectivityFact, selectivityDim1):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(49, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(49, test_dir=TEST_BASE_DIR)
     output_file.write('-- join test 2 - hash. Select + Join + aggregation\n')
     output_file.write('-- Performs the join using hashing\n')
     output_file.write('-- Query in SQL:\n')
@@ -275,7 +275,7 @@ def createTest49(factTable, dimTable1, dataSizeFact, dataSizeDim1, selectivityFa
         exp_output_file.write('{:0.2f}\n'.format(col1ValuesMean))
 
 def createTest50(factTable, dimTable2, dataSizeFact, dataSizeDim2, selectivityFact, selectivityDim2):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(50, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(50, test_dir=TEST_BASE_DIR)
     output_file.write('-- join test 3 - hashing many-one with larger selectivities.\n')
     output_file.write('-- Select + Join + aggregation\n')
     output_file.write('-- Performs the join using hashing\n')
@@ -311,7 +311,7 @@ def createTest50(factTable, dimTable2, dataSizeFact, dataSizeDim2, selectivityFa
         exp_output_file.write('{}\n'.format(col3ValuesSum))
 
 def createTest51(factTable, dimTable1, dataSizeFact, dataSizeDim1, selectivityFact, selectivityDim1):
-    output_file, exp_output_file = data_gen_utils.openFileHandles(51, TEST_DIR=TEST_BASE_DIR)
+    output_file, exp_output_file = utils.openFileHandles(51, test_dir=TEST_BASE_DIR)
     output_file.write('-- join test 4 - hashing many-many with larger selectivities.\n')
     output_file.write('-- Select + Join + aggregation\n')
     output_file.write('-- Query in SQL:\n')
@@ -378,7 +378,7 @@ def create_join_correctness_test(select_table_1,
     """
 
     # First join 
-    output_file_1, exp_output_file_1 = data_gen_utils.openFileHandles(test_num, TEST_DIR=TEST_BASE_DIR)
+    output_file_1, exp_output_file_1 = utils.openFileHandles(test_num, test_dir=TEST_BASE_DIR)
     _perf_test_helper(output_file_1, data_size, selectivity_1, selectivity_2, join_type_1)
     output_file_1.write('col1joined=fetch(db1.tbl5_sel1.col1,t1)\n')
     output_file_1.write('col2joined=fetch(db1.tbl5_sel2.col2,t2)\n')
@@ -387,7 +387,7 @@ def create_join_correctness_test(select_table_1,
     output_file_1.write('print(a1,a2)\n')
 
     # Second join
-    output_file_2, exp_output_file_2 = data_gen_utils.openFileHandles(test_num + 1, TEST_DIR=TEST_BASE_DIR)
+    output_file_2, exp_output_file_2 = utils.openFileHandles(test_num + 1, test_dir=TEST_BASE_DIR)
     _perf_test_helper(output_file_2, data_size, selectivity_1, selectivity_2, join_type_2)
     output_file_2.write('col1joined=fetch(db1.tbl5_sel1.col1,t1)\n')
     output_file_2.write('col2joined=fetch(db1.tbl5_sel2.col2,t2)\n')
@@ -419,8 +419,8 @@ def create_join_correctness_test(select_table_1,
         exp_output_file_1.write('{:0.2f}\n'.format(col_2_values_mean))
         exp_output_file_2.write('{:0.2f}\n'.format(col_2_values_mean))
 
-    data_gen_utils.closeFileHandles(output_file_1, exp_output_file_1)
-    data_gen_utils.closeFileHandles(output_file_2, exp_output_file_2)
+    utils.closeFileHandles(output_file_1, exp_output_file_1)
+    utils.closeFileHandles(output_file_2, exp_output_file_2)
 
 def create_join_perf_test(data_size, 
                           selectivity_1, 
@@ -432,14 +432,14 @@ def create_join_perf_test(data_size,
     Same as the previous test, but only checks for performance (not correctness).
     """
     # First join 
-    output_file_1, exp_output_file_1 = data_gen_utils.openFileHandles(test_num, TEST_DIR=TEST_BASE_DIR)
+    output_file_1, exp_output_file_1 = utils.openFileHandles(test_num, test_dir=TEST_BASE_DIR)
     _perf_test_helper(output_file_1, data_size, selectivity_1, selectivity_2, join_type_1)
-    data_gen_utils.closeFileHandles(output_file_1, exp_output_file_1)
+    utils.closeFileHandles(output_file_1, exp_output_file_1)
     
     # Second join
-    output_file_2, exp_output_file_2 = data_gen_utils.openFileHandles(test_num + 1, TEST_DIR=TEST_BASE_DIR)
+    output_file_2, exp_output_file_2 = utils.openFileHandles(test_num + 1, test_dir=TEST_BASE_DIR)
     _perf_test_helper(output_file_2, data_size, selectivity_1, selectivity_2, join_type_2)
-    data_gen_utils.closeFileHandles(output_file_2, exp_output_file_2)
+    utils.closeFileHandles(output_file_2, exp_output_file_2)
 
 def createTest52_55(select_table_1, select_table_2, data_size):
     """
