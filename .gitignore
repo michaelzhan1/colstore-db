@@ -30,3 +30,5 @@ client
 
 # Python
 .venv
+
+.DS_Store

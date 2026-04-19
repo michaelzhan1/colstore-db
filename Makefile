@@ -21,14 +21,14 @@ up:
 		colstore-db \
 		/bin/bash
 
-prep-tests: $(TEST_DATA) $(TEST_INPUT) $(TEST_EXPECTED)
+prep-tests:
 	[ -d $(TEST_DATA) ] || mkdir -p $(TEST_DATA)
 	[ -d $(TEST_INPUT) ] || mkdir -p $(TEST_INPUT)
 	[ -d $(TEST_EXPECTED) ] || mkdir -p $(TEST_EXPECTED)
 
 # generate test cases
-generate-all-tests: prep-tests
-	# TODO:
+generate-tests: prep-tests
+	python3 tests/scripts/milestone1.py
 
 # run tests with optional `mile` variable
 # TODO: add specific test number as well: mile -> mile_id, test_id?
