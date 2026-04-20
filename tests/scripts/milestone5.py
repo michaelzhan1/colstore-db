@@ -23,7 +23,7 @@ DOCKER_TEST_BASE_DIR = "/cs165/staff_test"
 ############################################################################
 def generateDataMilestone5(dataSize):
     outputFile = TEST_BASE_DIR + '/data5.csv'
-    header_line = utils.generateHeaderLine('db1', 'tbl5', 4)
+    header_line = utils.generate_header('db1', 'tbl5', 4)
     outputTable = pd.DataFrame(np.random.randint(0, dataSize/5, size=(dataSize, 4)), columns =['col1', 'col2', 'col3', 'col4'])
     # This is going to have many, many duplicates for large tables!!!!
     outputTable['col1'] = np.random.randint(0,1000, size = (dataSize))

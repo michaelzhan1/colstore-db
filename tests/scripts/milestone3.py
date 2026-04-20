@@ -36,9 +36,9 @@ def generateDataMilestone3(dataSize):
     outputFile_ctrl = TEST_BASE_DIR + '/' + 'data4_ctrl.csv'
     outputFile_btree = TEST_BASE_DIR + '/' + 'data4_btree.csv'
     outputFile_clustered_btree = TEST_BASE_DIR + '/' + 'data4_clustered_btree.csv'
-    header_line_ctrl = utils.generateHeaderLine('db1', 'tbl4_ctrl', 4)
-    header_line_btree = utils.generateHeaderLine('db1', 'tbl4', 4)
-    header_line_clustered_btree = utils.generateHeaderLine('db1', 'tbl4_clustered_btree', 4)
+    header_line_ctrl = utils.generate_header('db1', 'tbl4_ctrl', 4)
+    header_line_btree = utils.generate_header('db1', 'tbl4', 4)
+    header_line_clustered_btree = utils.generate_header('db1', 'tbl4_clustered_btree', 4)
     outputTable = pd.DataFrame(np.random.randint(0, dataSize/5, size=(dataSize, 4)), columns =['col1', 'col2', 'col3', 'col4'])
     # This is going to have many, many duplicates for large tables!!!!
     outputTable['col1'] = np.random.randint(0,1000, size = (dataSize))
@@ -156,9 +156,9 @@ def createTests22And23(dataTable, dataSize):
     output1 = dataTable[dfSelectMask1]['col1']
     output2 = dataTable[dfSelectMask2]['col1']
     for exp_output_file in [exp_output_file22, exp_output_file23]:
-        exp_output_file.write(utils.outputPrint(output1))
+        exp_output_file.write(utils.print_table(output1))
         exp_output_file.write('\n\n')
-        exp_output_file.write(utils.outputPrint(output2))
+        exp_output_file.write(utils.print_table(output2))
         exp_output_file.write('\n')
     utils.closeFileHandles(output_file22, exp_output_file22)
     utils.closeFileHandles(output_file23, exp_output_file23)
@@ -188,7 +188,7 @@ def createTest24(dataTable, dataSize):
     dfSelectMask2High = dataTable['col2'] < (val2 + offset2)
     dfTotalMask = dfSelectMask1Low & dfSelectMask1High & dfSelectMask2Low & dfSelectMask2High
     values = dataTable[dfTotalMask]['col1']
-    exp_output_file.write(utils.outputPrint(values))
+    exp_output_file.write(utils.print_table(values))
     exp_output_file.write('\n\n')
     exp_output_file.write(str(values.sum()) + '\n')
     utils.closeFileHandles(output_file, exp_output_file)
@@ -353,9 +353,9 @@ def createTest31(dataTable, dataSize):
     dfSelectMask2 = (dataTable['col3'] >= val2) & (dataTable['col3'] < (val2 + offset2))
     output1 = dataTable[dfSelectMask1]['col1']
     output2 = dataTable[dfSelectMask2]['col1']
-    exp_output_file.write(utils.outputPrint(output1))
+    exp_output_file.write(utils.print_table(output1))
     exp_output_file.write('\n\n')
-    exp_output_file.write(utils.outputPrint(output2))
+    exp_output_file.write(utils.print_table(output2))
     exp_output_file.write('\n')
     utils.closeFileHandles(output_file, exp_output_file)
 

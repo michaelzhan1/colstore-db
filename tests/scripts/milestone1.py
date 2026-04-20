@@ -9,15 +9,12 @@ DATA_DIR = "tests/data"
 INPUT_DIR = "tests/input"
 EXP_DIR = "tests/expected"
 
-# PRECISION FOR AVG OPERATION
-PRECISION = 2
-
 
 def generate_simple_table(n):
     """ Generates data file for first table. Table contains simple data """
     file = os.path.join(DATA_DIR, 'data1.csv')
 
-    header_line = utils.generateHeaderLine('db1', 'tbl1', 2)
+    header_line = utils.generate_header('db1', 'tbl1', 2)
     column1 = list(range(0, n))
     column2 = list(range(10, n + 10))
 
@@ -31,16 +28,15 @@ def generate_complex_table(n):
     """
     Generates data file for second table.
     Table contains 4 columns:
-        col1: values between -n/2 and n/2
+        col1: values between -n//2 and n//2
         col2: values between -n and n
         col3: values between 0 and 100
         col4: values between 2^31-10000 and 2^31
     """
-
     file = os.path.join(DATA_DIR, 'data2.csv')
 
-    header_line = utils.generateHeaderLine('db1', 'tbl2', 4)
-    table = pd.DataFrame(np.random.randint(-n/2, n/2, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
+    header_line = utils.generate_header('db1', 'tbl2', 4)
+    table = pd.DataFrame(np.random.randint(-n//2, n//2, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
     table['col2'] += table['col1']
     table['col3'] = np.random.randint(0, 100, size=(n))
     table['col4'] = np.random.randint((1 << 31) - n, 1 << 31, size=(n))
@@ -86,8 +82,8 @@ def test2(table):
     with utils.ExpectedFileWriter(2, test_dir=EXP_DIR) as f:
         exp1 = table[table['col1'] < select_lt]['col1']
         exp2 = table[table['col1'] >= select_ge]['col2']
-        f.write(exp1.to_string(header=False, index=False) + '\n\n')
-        f.write(exp2.to_string(header=False, index=False) + '\n\n')
+        f.write(utils.print_table(exp1) + '\n\n')
+        f.write(utils.print_table(exp2) + '\n\n')
 
 
 def test3(table):
@@ -104,9 +100,9 @@ def test3(table):
         f.write('a1=avg(f1)\n')
         f.write('print(a1)\n')
 
-    with utils.ExpectedFileWriter(3, test_dir=EXP_DIR) as exp_file:
+    with utils.ExpectedFileWriter(3, test_dir=EXP_DIR) as f:
         exp = table[(table['col1'] >= select_ge) & (table['col1'] < select_lt)]['col2']
-        exp_file.write(str(np.round(exp.mean(), PRECISION)) + '\n')
+        f.write(f'{exp.mean():.02f}\n')
 
 
 def test4():
@@ -136,7 +132,6 @@ def test4():
             lambda row: f.write(
                 f'relational_insert(db1.tbl2,{row["col1"]},{row["col2"]},{row["col3"]},{row["col4"]})\n'),
             axis=1)
-        f.write('s1=select(db1.tbl2.col4,)')
         f.write('shutdown\n')
 
     with utils.ExpectedFileWriter(4, test_dir=EXP_DIR) as f:
@@ -147,14 +142,13 @@ def test4():
 
 def test5(table, selectivity):
     """ Test summation. """
-
     if selectivity < 0 or selectivity > 1:
         raise ValueError("Selectivity should be between 0 and 1")
 
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n/2, n/2 - offset)
+    select_ge = np.random.randint(-n//2, n//2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(5, test_dir=INPUT_DIR) as f:
@@ -178,14 +172,13 @@ def test5(table, selectivity):
 
 def test6(table, selectivity):
     """ Test column addition. """
-
     if selectivity < 0 or selectivity > 1:
         raise ValueError("Selectivity should be between 0 and 1")
 
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n/2, n/2 - offset)
+    select_ge = np.random.randint(-n//2, n//2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(6, test_dir=INPUT_DIR) as f:
@@ -200,19 +193,18 @@ def test6(table, selectivity):
 
     with utils.ExpectedFileWriter(6, test_dir=EXP_DIR) as f:
         exp = table[(table['col1'] >= select_ge) & (table['col1'] < select_lt)]
-        f.write((exp['col2'] + exp['col3']).to_string(header=False, index=False) + '\n')
+        f.write(utils.print_table(exp['col2'] + exp['col3']) + '\n')
 
 
 def test7(table, selectivity):
     """ Test column subtraction. """
-
     if selectivity < 0 or selectivity > 1:
         raise ValueError("Selectivity should be between 0 and 1")
 
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n/2, n/2 - offset)
+    select_ge = np.random.randint(-n//2, n//2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(7, test_dir=INPUT_DIR) as f:
@@ -227,19 +219,18 @@ def test7(table, selectivity):
 
     with utils.ExpectedFileWriter(7, test_dir=EXP_DIR) as f:
         exp = table[(table['col1'] >= select_ge) & (table['col1'] < select_lt)]
-        f.write((exp['col3'] - exp['col2']).to_string(header=False, index=False) + '\n')
+        f.write(utils.print_table(exp['col3'] - exp['col2']) + '\n')
 
 
 def test8(table, selectivity):
     """ Test min and max. """
-
     if selectivity < 0 or selectivity > 1:
         raise ValueError("Selectivity should be between 0 and 1")
 
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n/2, n/2 - offset)
+    select_ge = np.random.randint(-n//2, n//2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(8, test_dir=INPUT_DIR) as f:
@@ -290,15 +281,14 @@ def test8(table, selectivity):
 
 def test9(table, selectivity):
     """ Combination of tests from 1-8. """
-
     if selectivity < 0 or selectivity > 1:
         raise ValueError("Selectivity should be between 0 and 1")
 
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge1 = np.random.randint(-n/2, n/2 - offset)
-    select_ge2 = np.random.randint(-n/2, n/2 - offset)
+    select_ge1 = np.random.randint(-n//2, n//2 - offset)
+    select_ge2 = np.random.randint(-n//2, n//2 - offset)
     select_lt1 = select_ge1 + offset
     select_lt2 = select_ge2 + offset
 
@@ -355,8 +345,8 @@ def test9(table, selectivity):
         col12sum = col1 + col2
         col32diff = col3 - col2
 
-        col12sum_avg = np.round(col12sum.mean() if col12sum.shape[0] > 0 else 0, PRECISION)
-        col32diff_avg = np.round(col32diff.mean() if col32diff.shape[0] > 0 else 0, PRECISION)
+        col12sum_avg = col12sum.mean() if col12sum.shape[0] > 0 else 0
+        col32diff_avg = col32diff.mean() if col32diff.shape[0] > 0 else 0
 
         # query 1
         f.write(f'{col2_min},{col3_max},{col32diff.sum()}\n')
@@ -368,7 +358,7 @@ def test9(table, selectivity):
 def main():
     # make tables
     table1 = generate_simple_table(1000)
-    table2 = generate_complex_table(100000)
+    table2 = generate_complex_table(10000)
 
     # make tests
     test1()

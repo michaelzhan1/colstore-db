@@ -1,334 +1,264 @@
 #!/usr/bin/python
-import sys, string
-from random import choice
-import random
-from string import ascii_lowercase
-from scipy.stats import beta, uniform
+import os
+
 import numpy as np
-import struct
 import pandas as pd
+import utils
 
-import tests.scripts.utils as utils
+DATA_DIR = "tests/data"
+INPUT_DIR = "tests/input"
+EXP_DIR = "tests/expected"
 
-import shutil
-
-# note this is the base path where we store the data files we generate
-TEST_BASE_DIR = "/cs165/generated_data"
-
-# note this is the base path that _POINTS_ to the data files we generate
-DOCKER_TEST_BASE_DIR = "/cs165/staff_test"
-
-#
-# Example usage: 
-#   python milestone2.py 10000 42 ~/repo/cs165-docker-test-runner/test_data /cs165/staff_test
-#
-
-############################################################################
-# Notes: You can generate your own scripts for generating data fairly easily by modifying this script.
-#
-# To test functionality and speed, run your tests first on small data. Then when you are reasonably confident that your code works, move to bigger data sizes for speed.
-# 
-############################################################################
-
-def generateDataMilestone2(dataSize):
-    outputFile = TEST_BASE_DIR + '/data3_batch.csv'
-    header_line = utils.generateHeaderLine('db1', 'tbl3_batch', 4)
-    outputTable = pd.DataFrame(np.random.randint(0, dataSize/5, size=(dataSize, 4)), columns =['col1', 'col2', 'col3', 'col4'])
-    # This is going to have many, many duplicates for large tables!!!!
-    outputTable['col1'] = np.random.randint(0,1000, size = (dataSize))
-    outputTable['col4'] = np.random.randint(0,10000, size = (dataSize))
-    outputTable['col4'] = outputTable['col4'] + outputTable['col1']
-    outputTable.to_csv(outputFile, sep=',', index=False, header=header_line, lineterminator='\n')
-    return outputTable
-
-def createTestTen():
-    # prelude
-    output_file, exp_output_file = utils.openFileHandles(10, test_dir=TEST_BASE_DIR)
-    output_file.write('-- Load Test Data 2\n')
-    output_file.write('-- Create a table to run batch queries on\n')
-    output_file.write('--\n')
-    # query
-    output_file.write('-- Loads data from: data3_batch.csv\n')
-    output_file.write('--\n')
-    output_file.write('-- Create Table\n')
-    output_file.write('create(tbl,"tbl3_batch",db1,4)\n')
-    output_file.write('create(col,"col1",db1.tbl3_batch)\n')
-    output_file.write('create(col,"col2",db1.tbl3_batch)\n')
-    output_file.write('create(col,"col3",db1.tbl3_batch)\n')
-    output_file.write('create(col,"col4",db1.tbl3_batch)\n')
-    output_file.write('--\n')
-    output_file.write('-- Load data immediately\n')
-    output_file.write('load(\"'+DOCKER_TEST_BASE_DIR+'/data3_batch.csv\")\n')
-    output_file.write('--\n')
-    output_file.write('-- Testing that the data is durable on disk.\n')
-    output_file.write('shutdown\n')
-    # no expected results
-    utils.closeFileHandles(output_file, exp_output_file)
-
-def createTestEleven(dataTable):
-    # prelude and query
-    output_file, exp_output_file = utils.openFileHandles(11, test_dir=TEST_BASE_DIR)
-    output_file.write('--\n')
-    output_file.write('-- Testing for batching queries\n')
-    output_file.write('-- 2 queries with NO overlap\n')
-    output_file.write('--\n')
-    output_file.write('-- Query in SQL:\n')
-    output_file.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 10 AND col1 < 20;\n')
-    output_file.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 800 AND col1 < 830;\n')
-    output_file.write('--\n')
-    output_file.write('--\n')
-    output_file.write('batch_queries()\n')
-    output_file.write('s1=select(db1.tbl3_batch.col1,10,20)\n')
-    output_file.write('s2=select(db1.tbl3_batch.col1,800,830)\n')
-    output_file.write('batch_execute()\n')
-    output_file.write('f1=fetch(db1.tbl3_batch.col4,s1)\n')
-    output_file.write('f2=fetch(db1.tbl3_batch.col4,s2)\n')
-    output_file.write('print(f1)\n')
-    output_file.write('print(f2)\n')
-    # generate expected restuls. 
-    dfSelectMask1 = (dataTable['col1'] >= 10) & (dataTable['col1'] < 20)
-    dfSelectMask2 = (dataTable['col1'] >= 800) & (dataTable['col1'] < 830)
-    output1 = dataTable[dfSelectMask1]['col4']
-    output2 = dataTable[dfSelectMask2]['col4']
-    exp_output_file.write(utils.outputPrint(output1))
-    exp_output_file.write('\n\n')
-    exp_output_file.write(utils.outputPrint(output2))
-    exp_output_file.write('\n')
-    utils.closeFileHandles(output_file, exp_output_file)
+# PRECISION FOR AVG OPERATION
+PRECISION = 2
 
 
-def createTestTwelve(dataTable):
-    # prelude and query
-    output_file, exp_output_file = utils.openFileHandles(12, test_dir=TEST_BASE_DIR)
-    output_file.write('--\n')
-    output_file.write('-- Testing for batching queries\n')
-    output_file.write('-- 2 queries with partial overlap\n')
-    output_file.write('--\n')
-    output_file.write('-- Query in SQL:\n')
-    output_file.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 600 AND col1 < 820;\n')
-    output_file.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 800 AND col1 < 830;\n')
-    output_file.write('--\n')
-    output_file.write('--\n')
-    output_file.write('batch_queries()\n')
-    output_file.write('s1=select(db1.tbl3_batch.col1,600,820)\n')
-    output_file.write('s2=select(db1.tbl3_batch.col1,800,830)\n')
-    output_file.write('batch_execute()\n')
-    output_file.write('f1=fetch(db1.tbl3_batch.col4,s1)\n')
-    output_file.write('f2=fetch(db1.tbl3_batch.col4,s2)\n')
-    output_file.write('print(f1)\n')
-    output_file.write('print(f2)\n')
-    # generate expected restuls. 
-    dfSelectMask1 = (dataTable['col1'] >= 600) & (dataTable['col1'] < 820)
-    dfSelectMask2 = (dataTable['col1'] >= 800) & (dataTable['col1'] < 830)
-    output1 = dataTable[dfSelectMask1]['col4']
-    output2 = dataTable[dfSelectMask2]['col4']
-    exp_output_file.write(utils.outputPrint(output1))
-    exp_output_file.write('\n\n')
-    exp_output_file.write(utils.outputPrint(output2))
-    exp_output_file.write('\n')
-    utils.closeFileHandles(output_file, exp_output_file)
+def generate_table(n):
+    """ Generate a data table. """
+    file = os.path.join(DATA_DIR, 'data3.csv')
 
-def createTestThirteen(dataTable):
-    # prelude and query
-    output_file, exp_output_file = utils.openFileHandles(13, test_dir=TEST_BASE_DIR)
-    output_file.write('--\n')
-    output_file.write('-- Testing for batching queries\n')
-    output_file.write('-- 2 queries with full overlap (subsumption)\n')
-    output_file.write('--\n')
-    output_file.write('-- Query in SQL:\n')
-    output_file.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 810 AND col1 < 820;\n')
-    output_file.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 800 AND col1 < 830;\n')
-    output_file.write('--\n')
-    output_file.write('--\n')
-    output_file.write('batch_queries()\n')
-    output_file.write('s1=select(db1.tbl3_batch.col1,810,820)\n')
-    output_file.write('s2=select(db1.tbl3_batch.col1,800,830)\n')
-    output_file.write('batch_execute()\n')
-    output_file.write('f1=fetch(db1.tbl3_batch.col4,s1)\n')
-    output_file.write('f2=fetch(db1.tbl3_batch.col4,s2)\n')
-    output_file.write('print(f1)\n')
-    output_file.write('print(f2)\n')
-     # generate expected restuls. 
-    dfSelectMask1 = (dataTable['col1'] >= 810) & (dataTable['col1'] < 820)
-    dfSelectMask2 = (dataTable['col1'] >= 800) & (dataTable['col1'] < 830)
-    output1 = dataTable[dfSelectMask1]['col4']
-    output2 = dataTable[dfSelectMask2]['col4']
-    exp_output_file.write(utils.outputPrint(output1))
-    exp_output_file.write('\n\n')
-    exp_output_file.write(utils.outputPrint(output2))
-    exp_output_file.write('\n')
-    utils.closeFileHandles(output_file, exp_output_file)
-
-def createTestFourteen(dataTable):
-    # prelude and query
-    output_file, exp_output_file = utils.openFileHandles(14, test_dir=TEST_BASE_DIR)
-    output_file.write('--\n')
-    output_file.write('-- Testing for batching queries\n')
-    output_file.write('-- Queries with no overlap\n')
-    output_file.write('--\n')
-    output_file.write('-- Query in SQL:\n')
-    output_file.write('-- 10 Queries of the type:\n')
-    output_file.write('-- SELECT col1 FROM tbl3_batch WHERE col4 >= _ AND col4 < _;\n')
-    output_file.write('--\n')
-    output_file.write('--\n')
-    output_file.write('batch_queries()\n')
-    for i in range(10):
-        output_file.write('s{}=select(db1.tbl3_batch.col4,{},{})\n'.format(i, (1000 * i), (1000 * i) + 30))
-    output_file.write('batch_execute()\n')
-    for i in range(10):
-        output_file.write('f{}=fetch(db1.tbl3_batch.col1,s{})\n'.format(i,i))
-    for i in range(10):
-        output_file.write('print(f{})\n'.format(i))
-    #generate expected results
-    for i in range(10):
-        dfSelectMask = (dataTable['col4'] >= (1000 * i)) & (dataTable['col4'] < ((1000 * i) + 30))
-        output = dataTable[dfSelectMask]['col1']
-        exp_output_file.write(utils.outputPrint(output))
-        exp_output_file.write('\n\n')
-    utils.closeFileHandles(output_file, exp_output_file)
+    header_line = utils.generate_header('db1', 'tbl3_batch', 4)
+    table = pd.DataFrame(np.random.randint(0, n/5, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
+    table['col1'] = np.random.randint(0, 1000, size=(n))
+    table['col4'] = np.random.randint(0, 10000, size=(n))
+    table['col4'] = table['col4'] + table['col1']
+    table.to_csv(file, sep=',', index=False, header=header_line, lineterminator='\n')
+    return table
 
 
-def createTestFifteen(dataTable):
-    # prelude and queryDOCKER_TEST_BASE_DIR
-    output_file, exp_output_file = utils.openFileHandles(15, test_dir=TEST_BASE_DIR)
-    output_file.write('--\n')
-    output_file.write('-- Testing for batching queries\n')
-    output_file.write('-- Queries with full overlap (subsumption)\n')
-    output_file.write('--\n')
-    randomVal = np.random.randint(1000,9900)
-    output_file.write('-- Query in SQL:\n')
-    output_file.write('-- 10 Queries of the type:\n')
-    output_file.write('-- SELECT col1 FROM tbl3_batch WHERE col4 >= _ AND col4 < _;\n')
-    output_file.write('--\n')
-    output_file.write('--\n')
-    output_file.write('batch_queries()\n')
-    for i in range(10):
-        output_file.write('s{}=select(db1.tbl3_batch.col4,{},{})\n'.format(i, randomVal + (2 * i), randomVal + 60 - (2 * i)))
-    output_file.write('batch_execute()\n')
-    for i in range(10):
-        output_file.write('f{}=fetch(db1.tbl3_batch.col1,s{})\n'.format(i,i))
-    for i in range(10):
-        output_file.write('print(f{})\n'.format(i))
-    #generate expected results
-    for i in range(10):
-        dfSelectMask = (dataTable['col4'] >= (randomVal + (2 * i))) & (dataTable['col4'] < (randomVal + 60 - (2 * i)))
-        output = dataTable[dfSelectMask]['col1']
-        exp_output_file.write(utils.outputPrint(output))
-        exp_output_file.write('\n\n')
-    utils.closeFileHandles(output_file, exp_output_file)
+def test10():
+    """ Test for loading data. """
+    with utils.InputFileWriter(10, test_dir=INPUT_DIR) as f:
+        f.write('-- Load Test Data 2\n')
+        f.write('-- Create a table to run batch queries on\n')
+        f.write('--\n')
+        f.write('-- Loads data from: data3_batch.csv\n')
+        f.write('--\n')
+        f.write('-- Create Table\n')
+        f.write('create(tbl,"tbl3_batch",db1,4)\n')
+        f.write('create(col,"col1",db1.tbl3_batch)\n')
+        f.write('create(col,"col2",db1.tbl3_batch)\n')
+        f.write('create(col,"col3",db1.tbl3_batch)\n')
+        f.write('create(col,"col4",db1.tbl3_batch)\n')
+        f.write('--\n')
+        f.write('-- Load data immediately\n')
+        f.write(f'load("{os.path.join(DATA_DIR, "data3.csv")}")\n')
+        f.write('--\n')
+        f.write('-- Testing that the data is durable on disk.\n')
+        f.write('shutdown\n')
 
-def createTests16And17(dataTable, dataSize):
-    # 1 / 1000 tuples should qualify on average. This is so that most time is spent on scans & not fetches or prints
-    offset = np.max([1, int(dataSize/5000)])
-    query_starts = np.random.randint(0,(dataSize/8), size = (100))
-    output_file16, exp_output_file16 = utils.openFileHandles(16, test_dir=TEST_BASE_DIR)
-    output_file17, exp_output_file17 = utils.openFileHandles(17, test_dir=TEST_BASE_DIR)
-    output_file16.write('--\n')
-    output_file16.write('-- Control timing for without batching\n')
-    output_file16.write('-- Queries for 16 and 17 are identical.\n')
-    output_file16.write('-- Query in SQL:\n')
-    output_file16.write('-- 100 Queries of the type:\n')
-    output_file16.write('-- SELECT col3 FROM tbl3_batch WHERE col2 >= _ AND col2 < _;\n')
-    output_file16.write('--\n')
-    output_file17.write('--\n')
-    output_file17.write('-- Same queries with batching\n')
-    output_file17.write('-- Queries for 16 and 17 are identical.\n')
-    output_file17.write('--\n')
-    output_file17.write('batch_queries()\n')
-    for i in range(100):
-        output_file16.write('s{}=select(db1.tbl3_batch.col2,{},{})\n'.format(i, query_starts[i], query_starts[i] + offset))
-        output_file17.write('s{}=select(db1.tbl3_batch.col2,{},{})\n'.format(i, query_starts[i], query_starts[i] + offset))
-    output_file17.write('batch_execute()\n')
-    for i in range(100):
-        output_file16.write('f{}=fetch(db1.tbl3_batch.col3,s{})\n'.format(i,i))
-        output_file17.write('f{}=fetch(db1.tbl3_batch.col3,s{})\n'.format(i,i))
-    for i in range(100):
-        output_file16.write('print(f{})\n'.format(i))
-        output_file17.write('print(f{})\n'.format(i))
-    # generate expected results
-    for i in range(100):
-        dfSelectMask = (dataTable['col2'] >= query_starts[i]) & ((dataTable['col2'] < (query_starts[i] + offset)))
-        output = dataTable[dfSelectMask]['col3']
-        exp_output_file16.write(utils.outputPrint(output))
-        exp_output_file16.write('\n\n')
-        exp_output_file17.write(utils.outputPrint(output))
-        exp_output_file17.write('\n\n')
-    utils.closeFileHandles(output_file16, exp_output_file16)
-    utils.closeFileHandles(output_file17, exp_output_file17)
-    return query_starts
+    with utils.ExpectedFileWriter(10, test_dir=EXP_DIR) as f:
+        f.write('')
+        # TODO: see if we can print out entire schema or something
 
 
-def createTests18And19(dataTable, dataSize, query_starts):
-    # 1 / 1000 tuples should qualify on average. This is so that most time is spent on scans & not fetches or prints
-    offset = np.max([1, int(dataSize/5000)])
-    output_file18, exp_output_file18 = utils.openFileHandles(18, test_dir=TEST_BASE_DIR)
-    output_file19, exp_output_file19 = utils.openFileHandles(19, test_dir=TEST_BASE_DIR)
-    output_file18.write('--\n')
-    output_file18.write('-- Queries for 18 and 19 are single-core versions of Queries for 16 and 17.\n')
-    output_file18.write('-- Query in SQL:\n')
-    output_file18.write('-- 100 Queries of the type:\n')
-    output_file18.write('-- SELECT col3 FROM tbl3_batch WHERE col2 >= _ AND col2 < _;\n')
-    output_file18.write('--\n')
-    output_file19.write('--\n')
-    output_file19.write('-- Same queries with single-core execution\n')
-    output_file19.write('-- Queries for 18 and 19 are single-core versions of Queries for 16 and 17.\n')
-    output_file19.write('--\n')
-    output_file18.write('single_core()\n')
-    output_file19.write('single_core()\n')
-    output_file19.write('batch_queries()\n')
-    for i in range(100):
-        output_file18.write('s{}=select(db1.tbl3_batch.col2,{},{})\n'.format(i, query_starts[i], query_starts[i] + offset))
-        output_file19.write('s{}=select(db1.tbl3_batch.col2,{},{})\n'.format(i, query_starts[i], query_starts[i] + offset))
-    output_file19.write('batch_execute()\n')
-    for i in range(100):
-        output_file18.write('f{}=fetch(db1.tbl3_batch.col3,s{})\n'.format(i,i))
-        output_file19.write('f{}=fetch(db1.tbl3_batch.col3,s{})\n'.format(i,i))
-    output_file19.write('single_core_execute()\n')
-    output_file18.write('single_core_execute()\n')
-    for i in range(100):
-        output_file18.write('print(f{})\n'.format(i))
-        output_file19.write('print(f{})\n'.format(i))
-    for i in range(100):
-        dfSelectMask = (dataTable['col2'] >= query_starts[i]) & ((dataTable['col2'] < (query_starts[i] + offset)))
-        output = dataTable[dfSelectMask]['col3']
-        exp_output_file18.write(utils.outputPrint(output))
-        exp_output_file18.write('\n\n')
-        exp_output_file19.write(utils.outputPrint(output))
-        exp_output_file19.write('\n\n')
-    utils.closeFileHandles(output_file18, exp_output_file18)
-    utils.closeFileHandles(output_file19, exp_output_file19)
+def test11(table):
+    """ Test batching queries with no overlap. """
+    select_ge1 = 10
+    select_lt1 = 20
+    select_ge2 = 800
+    select_lt2 = 830
+
+    with utils.InputFileWriter(11, test_dir=INPUT_DIR) as f:
+        f.write('-- Testing for batching queries\n')
+        f.write('-- 2 queries with NO overlap\n')
+        f.write('--\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 10 AND col1 < 20;\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 800 AND col1 < 830;\n')
+        f.write('--\n')
+        f.write('batch_queries()\n')
+        f.write(f's1=select(db1.tbl3_batch.col1,{select_ge1},{select_lt1})\n')
+        f.write(f's2=select(db1.tbl3_batch.col1,{select_ge2},{select_lt2})\n')
+        f.write('batch_execute()\n')
+        f.write('f1=fetch(db1.tbl3_batch.col4,s1)\n')
+        f.write('f2=fetch(db1.tbl3_batch.col4,s2)\n')
+        f.write('print(f1)\n')
+        f.write('print(f2)\n')
+
+    with utils.ExpectedFileWriter(11, test_dir=EXP_DIR) as f:
+        exp1 = table[(table['col1'] >= select_ge1) & (table['col1'] < select_lt1)]['col4']
+        exp2 = table[(table['col1'] >= select_ge2) & (table['col1'] < select_lt2)]['col4']
+        f.write(utils.print_table(exp1) + '\n\n')
+        f.write(utils.print_table(exp2) + '\n')
 
 
-def generateMilestoneTwoFiles(dataSize, randomSeed):
-    np.random.seed(randomSeed)
-    dataTable = generateDataMilestone2(dataSize)   
-    createTestTen()
-    createTestEleven(dataTable)
-    createTestTwelve(dataTable)
-    createTestThirteen(dataTable)
-    createTestFourteen(dataTable)
-    createTestFifteen(dataTable)
-    query_starts = createTests16And17(dataTable, dataSize)
-    createTests18And19(dataTable, dataSize, query_starts)
+def test12(table):
+    """ Test batching queries with partial overlap. """
+    select_ge1 = 600
+    select_lt1 = 820
+    select_ge2 = 800
+    select_lt2 = 830
 
-def main(argv):
-    global TEST_BASE_DIR
-    global DOCKER_TEST_BASE_DIR
+    with utils.InputFileWriter(12, test_dir=INPUT_DIR) as f:
+        f.write('-- Testing for batching queries\n')
+        f.write('-- 2 queries with partial overlap\n')
+        f.write('--\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 600 AND col1 < 820;\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 800 AND col1 < 830;\n')
+        f.write('--\n')
+        f.write('batch_queries()\n')
+        f.write(f's1=select(db1.tbl3_batch.col1,{select_ge1},{select_lt1})\n')
+        f.write(f's2=select(db1.tbl3_batch.col1,{select_ge2},{select_lt2})\n')
+        f.write('batch_execute()\n')
+        f.write('f1=fetch(db1.tbl3_batch.col4,s1)\n')
+        f.write('f2=fetch(db1.tbl3_batch.col4,s2)\n')
+        f.write('print(f1)\n')
+        f.write('print(f2)\n')
 
-    dataSize = int(argv[0])
-    if len(argv) > 1:
-        randomSeed = int(argv[1])
-    else:
-        randomSeed = 47
+    with utils.ExpectedFileWriter(12, test_dir=EXP_DIR) as f:
+        exp1 = table[(table['col1'] >= select_ge1) & (table['col1'] < select_lt1)]['col4']
+        exp2 = table[(table['col1'] >= select_ge2) & (table['col1'] < select_lt2)]['col4']
+        f.write(utils.print_table(exp1) + '\n\n')
+        f.write(utils.print_table(exp2) + '\n')
 
-    # override the base directory for where to output test related files
-    if len(argv) > 2:
-        TEST_BASE_DIR = argv[2]
-        if len(argv) > 3:
-            DOCKER_TEST_BASE_DIR = argv[3]
 
-    generateMilestoneTwoFiles(dataSize, randomSeed)
+def test13(table):
+    """ Test batching queries with full overlap (subsumption). """
+    select_ge1 = 810
+    select_lt1 = 820
+    select_ge2 = 800
+    select_lt2 = 830
+
+    with utils.InputFileWriter(13, test_dir=INPUT_DIR) as f:
+        f.write('-- Testing for batching queries\n')
+        f.write('-- 2 queries with full overlap (subsumption)\n')
+        f.write('--\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 810 AND col1 < 820;\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= 800 AND col1 < 830;\n')
+        f.write('--\n')
+        f.write('batch_queries()\n')
+        f.write(f's1=select(db1.tbl3_batch.col1,{select_ge1},{select_lt1})\n')
+        f.write(f's2=select(db1.tbl3_batch.col1,{select_ge2},{select_lt2})\n')
+        f.write('batch_execute()\n')
+        f.write('f1=fetch(db1.tbl3_batch.col4,s1)\n')
+        f.write('f2=fetch(db1.tbl3_batch.col4,s2)\n')
+        f.write('print(f1)\n')
+        f.write('print(f2)\n')
+
+    with utils.ExpectedFileWriter(13, test_dir=EXP_DIR) as f:
+        exp1 = table[(table['col1'] >= select_ge1) & (table['col1'] < select_lt1)]['col4']
+        exp2 = table[(table['col1'] >= select_ge2) & (table['col1'] < select_lt2)]['col4']
+        f.write(utils.print_table(exp1) + '\n\n')
+        f.write(utils.print_table(exp2) + '\n')
+
+
+def test14(table):
+    """ Test batching multiple queries with no overlap. """
+    select_ges = [1000 * i for i in range(10)]
+    select_lts = [(1000 * i) + 30 for i in range(10)]
+
+    with utils.InputFileWriter(14, test_dir=INPUT_DIR) as f:
+        f.write('-- Testing for batching queries\n')
+        f.write('-- 10 queries with no overlap\n')
+        f.write('--\n')
+        f.write('-- 10 Queries of the type:\n')
+        f.write('-- SELECT col4 FROM tbl3_batch WHERE col1 >= _ AND col1 < _;\n')
+        f.write('--\n')
+        f.write('batch_queries()\n')
+        for i in range(10):
+            f.write(f's{i}=select(db1.tbl3_batch.col1,{select_ges[i]},{select_lts[i]})\n')
+        f.write('batch_execute()\n')
+        for i in range(10):
+            f.write(f'f{i}=fetch(db1.tbl3_batch.col4,s{i})\n')
+        for i in range(10):
+            f.write(f'print(f{i})\n')
+
+    with utils.ExpectedFileWriter(14, test_dir=EXP_DIR) as f:
+        for i in range(10):
+            exp = table[(table['col1'] >= select_ges[i]) & (table['col1'] < select_lts[i])]['col4']
+            f.write(utils.print_table(exp) + '\n')
+            if i != 9:
+                f.write('\n')
+
+
+def test15(table):
+    """ Test batching multiple queries with full overlap (subsumption). """
+    val = np.random.randint(1000, 9900)
+    select_ges = [val + 2 * i for i in range(10)]
+    select_lts = [val + 60 - (2 * i) for i in range(10)]
+
+    with utils.InputFileWriter(15, test_dir=INPUT_DIR) as f:
+        f.write('-- Testing for batching queries\n')
+        f.write('-- 10 queries with full overlap (subsumption)\n')
+        f.write('--\n')
+        f.write('-- 10 Queries of the type:\n')
+        f.write('-- SELECT col1 FROM tbl3_batch WHERE col4 >= _ AND col4 < _;\n')
+        f.write('--\n')
+        f.write('batch_queries()\n')
+        for i in range(10):
+            f.write(f's{i}=select(db1.tbl3_batch.col4,{select_ges[i]},{select_lts[i]})\n')
+        f.write('batch_execute()\n')
+        for i in range(10):
+            f.write(f'f{i}=fetch(db1.tbl3_batch.col1,s{i})\n')
+        for i in range(10):
+            f.write(f'print(f{i})\n')
+
+    with utils.ExpectedFileWriter(15, test_dir=EXP_DIR) as f:
+        for i in range(10):
+            exp = table[(table['col4'] >= select_ges[i]) & (table['col4'] < select_lts[i])]['col1']
+            f.write(utils.print_table(exp) + '\n')
+            if i != 9:
+                f.write('\n')
+
+
+def test16_17_18_19(table):
+    """
+    Pair tests for batching a large number of queries.
+    16 has no batching and 17 has batching.
+    18 and 19 are single-core versions of 16 and 17 respectively.
+    """
+    n = table.shape[0]
+
+    offset = max(1, n // 5000)
+    query_starts = np.random.randint(0, (n/8), size=(100))
+    query_ends = query_starts + offset
+
+    with utils.InputFileWriter(16, test_dir=INPUT_DIR) as f16, \
+            utils.InputFileWriter(17, test_dir=INPUT_DIR) as f17, \
+            utils.InputFileWriter(18, test_dir=INPUT_DIR) as f18, \
+            utils.InputFileWriter(19, test_dir=INPUT_DIR) as f19:
+        utils.write_multiple('--', f16, f17, f18, f19)
+        f16.write('-- Without batching, multi-core\n')
+        f17.write('-- With batching, multi-core\n')
+        f18.write('-- Without batching, single-core\n')
+        f19.write('-- With batching, single-core\n')
+        utils.write_multiple('--\n', f16, f17, f18, f19)
+        utils.write_multiple('-- 100 queries of the type:\n', f16, f17, f18, f19)
+        utils.write_multiple('-- SELECT col3 FROM tbl3_batch WHERE col2 >= _ AND col2 < _;\n', f16, f17, f18, f19)
+        utils.write_multiple('--\n', f16, f17, f18, f19)
+        utils.write_multiple('single_core()\n', f18, f19)
+        utils.write_multiple('batch_queries()\n', f17, f19)
+        for i in range(100):
+            utils.write_multiple(f's{i}=select(db1.tbl3_batch.col2,{query_starts[i]},{query_ends[i]})\n', f16, f17, f18, f19)
+        utils.write_multiple('batch_execute()\n', f17, f19)
+        for i in range(100):
+            utils.write_multiple(f'f{i}=fetch(db1.tbl3_batch.col3,s{i})\n', f16, f17, f18, f19)
+        utils.write_multiple('single_core_execute()\n', f18, f19)
+        for i in range(100):
+            utils.write_multiple(f'print(f{i})\n', f16, f17, f18, f19)
+
+    with utils.ExpectedFileWriter(16, test_dir=EXP_DIR) as f16, \
+            utils.ExpectedFileWriter(17, test_dir=EXP_DIR) as f17, \
+            utils.ExpectedFileWriter(18, test_dir=EXP_DIR) as f18, \
+            utils.ExpectedFileWriter(19, test_dir=EXP_DIR) as f19:
+        for i in range(100):
+            exp = table[(table['col2'] >= query_starts[i]) & ((table['col2'] < query_ends[i]))]['col3']
+            utils.write_multiple(utils.print_table(exp) + '\n', f16, f17, f18, f19)
+            if i != 99:
+                utils.write_multiple('\n', f16, f17, f18, f19)
+
+
+def main():
+    table = generate_table(10000)
+
+    test10()
+    test11(table)
+    test12(table)
+    test13(table)
+    test14(table)
+    test15(table)
+    test16_17_18_19(table)
+
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
-
+    main()

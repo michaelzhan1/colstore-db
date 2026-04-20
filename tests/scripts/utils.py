@@ -46,7 +46,13 @@ class ExpectedFileWriter(TestFileWriter):
         super().__init__(n, 'exp', test_dir)
 
 
-def generateHeaderLine(dbName, tableName, numColumns):
+def write_multiple(msg, *fs):
+    """ Write a message to multiple file objects. Assumes file objects are opened."""
+    for f in fs:
+        f.write(msg)
+
+
+def generate_header(dbName, tableName, numColumns):
     """ Generates a header line for a table with the specified number of columns.
     The header line will be in the format: dbName.tableName.col1, dbName.tableName.col2, ..., dbName.tableName.colN
 
@@ -61,7 +67,7 @@ def generateHeaderLine(dbName, tableName, numColumns):
     return [f"{dbName}.{tableName}.col{i}" for i in range(1, numColumns+1)]
 
 
-def outputPrint(pandasArray):
+def print_table(pandasArray):
     """ Converts a pandas DataFrame or Series to a string representation without headers and index.
     If the DataFrame or Series is empty, it returns an empty string.
 

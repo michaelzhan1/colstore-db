@@ -60,11 +60,11 @@ def generateDataMilestone4(dataSizeFact, dataSizeDim1, dataSizeDim2, dataSizeSel
     outputFile4 = TEST_BASE_DIR + '/' + 'data5_selectivity1.csv'
     outputFile5 = TEST_BASE_DIR + '/' + 'data5_selectivity2.csv'
 
-    header_line_fact = utils.generateHeaderLine('db1', 'tbl5_fact', 4)
-    header_line_dim1 = utils.generateHeaderLine('db1', 'tbl5_dim1', 3)
-    header_line_dim2 = utils.generateHeaderLine('db1', 'tbl5_dim2', 2)
-    header_line_sel1 = utils.generateHeaderLine('db1', 'tbl5_sel1', 2)
-    header_line_sel2 = utils.generateHeaderLine('db1', 'tbl5_sel2', 2)
+    header_line_fact = utils.generate_header('db1', 'tbl5_fact', 4)
+    header_line_dim1 = utils.generate_header('db1', 'tbl5_dim1', 3)
+    header_line_dim2 = utils.generate_header('db1', 'tbl5_dim2', 2)
+    header_line_sel1 = utils.generate_header('db1', 'tbl5_sel1', 2)
+    header_line_sel2 = utils.generate_header('db1', 'tbl5_sel2', 2)
     outputFactTable = pd.DataFrame(np.random.randint(0, dataSizeFact/5, size=(dataSizeFact, 4)), columns =['col1', 'col2', 'col3', 'col4'])
     zipfDist = ZipfianDistribution(zipfianParam, numDistinctElements)
     # See Zipf's distribution (wikipedia) for a description of this distribution. 
