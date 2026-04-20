@@ -28,7 +28,7 @@ def generate_complex_table(n):
     """
     Generates data file for second table.
     Table contains 4 columns:
-        col1: values between -n//2 and n//2
+        col1: values between -n // 2 and n // 2
         col2: values between -n and n
         col3: values between 0 and 100
         col4: values between 2^31-10000 and 2^31
@@ -36,7 +36,7 @@ def generate_complex_table(n):
     file = os.path.join(DATA_DIR, 'data2.csv')
 
     header_line = utils.generate_header('db1', 'tbl2', 4)
-    table = pd.DataFrame(np.random.randint(-n//2, n//2, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
+    table = pd.DataFrame(np.random.randint(-n // 2, n // 2, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
     table['col2'] += table['col1']
     table['col3'] = np.random.randint(0, 100, size=(n))
     table['col4'] = np.random.randint((1 << 31) - n, 1 << 31, size=(n))
@@ -83,7 +83,7 @@ def test2(table):
         exp1 = table[table['col1'] < select_lt]['col1']
         exp2 = table[table['col1'] >= select_ge]['col2']
         f.write(utils.print_table(exp1) + '\n\n')
-        f.write(utils.print_table(exp2) + '\n\n')
+        f.write(utils.print_table(exp2) + '\n')
 
 
 def test3(table):
@@ -148,7 +148,7 @@ def test5(table, selectivity):
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n//2, n//2 - offset)
+    select_ge = np.random.randint(-n // 2, n // 2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(5, test_dir=INPUT_DIR) as f:
@@ -178,7 +178,7 @@ def test6(table, selectivity):
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n//2, n//2 - offset)
+    select_ge = np.random.randint(-n // 2, n // 2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(6, test_dir=INPUT_DIR) as f:
@@ -204,7 +204,7 @@ def test7(table, selectivity):
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n//2, n//2 - offset)
+    select_ge = np.random.randint(-n // 2, n // 2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(7, test_dir=INPUT_DIR) as f:
@@ -230,7 +230,7 @@ def test8(table, selectivity):
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge = np.random.randint(-n//2, n//2 - offset)
+    select_ge = np.random.randint(-n // 2, n // 2 - offset)
     select_lt = select_ge + offset
 
     with utils.InputFileWriter(8, test_dir=INPUT_DIR) as f:
@@ -287,8 +287,8 @@ def test9(table, selectivity):
     n = table.shape[0]
 
     offset = int(selectivity * n)
-    select_ge1 = np.random.randint(-n//2, n//2 - offset)
-    select_ge2 = np.random.randint(-n//2, n//2 - offset)
+    select_ge1 = np.random.randint(-n // 2, n // 2 - offset)
+    select_ge2 = np.random.randint(-n // 2, n // 2 - offset)
     select_lt1 = select_ge1 + offset
     select_lt2 = select_ge2 + offset
 

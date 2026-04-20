@@ -9,16 +9,13 @@ DATA_DIR = "tests/data"
 INPUT_DIR = "tests/input"
 EXP_DIR = "tests/expected"
 
-# PRECISION FOR AVG OPERATION
-PRECISION = 2
-
 
 def generate_table(n):
     """ Generate a data table. """
     file = os.path.join(DATA_DIR, 'data3.csv')
 
     header_line = utils.generate_header('db1', 'tbl3_batch', 4)
-    table = pd.DataFrame(np.random.randint(0, n/5, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
+    table = pd.DataFrame(np.random.randint(0, n // 5, size=(n, 4)), columns=['col1', 'col2', 'col3', 'col4'])
     table['col1'] = np.random.randint(0, 1000, size=(n))
     table['col4'] = np.random.randint(0, 10000, size=(n))
     table['col4'] = table['col4'] + table['col1']
@@ -210,7 +207,7 @@ def test16_17_18_19(table):
     n = table.shape[0]
 
     offset = max(1, n // 5000)
-    query_starts = np.random.randint(0, (n/8), size=(100))
+    query_starts = np.random.randint(0, n // 8, size=(100))
     query_ends = query_starts + offset
 
     with utils.InputFileWriter(16, test_dir=INPUT_DIR) as f16, \
