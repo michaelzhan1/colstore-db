@@ -102,7 +102,7 @@ def test3(table):
 
     with utils.ExpectedFileWriter(3, test_dir=EXP_DIR) as f:
         exp = table[(table['col1'] >= select_ge) & (table['col1'] < select_lt)]['col2']
-        f.write(f'{exp.mean():.02f}\n')
+        f.write(f'{exp.mean():0.2f}\n')
 
 
 def test4():
@@ -352,7 +352,7 @@ def test9(table, selectivity):
         f.write(f'{col2_min},{col3_max},{col32diff.sum()}\n')
 
         # query 2
-        f.write(f'{col12sum_avg:.02f},{col2_min},{col3_max},{col32diff_avg:.02f},{col32diff.sum()}\n')
+        f.write(f'{col12sum_avg:0.0f},{col2_min},{col3_max},{col32diff_avg:0.2f},{col32diff.sum()}\n')
 
 
 def main():
