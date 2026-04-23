@@ -32,6 +32,7 @@ generate-tests: prep-tests
 	python3 tests/scripts/milestone2.py
 	python3 tests/scripts/milestone3.py
 	python3 tests/scripts/milestone4.py
+	python3 tests/scripts/milestone5.py
 
 # run tests with optional `mile` variable
 # TODO: add specific test number as well: mile -> mile_id, test_id?
@@ -45,9 +46,7 @@ test:
 	fi
 
 clean:
-	$(MAKE) -C src clean
-
-clean-tests:
 	rm -rf $(TEST_DATA) $(TEST_INPUT) $(TEST_EXPECTED)
+	$(MAKE) -C src clean
 
 .PHONY: build test
