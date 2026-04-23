@@ -31,6 +31,7 @@ generate-tests: prep-tests
 	python3 tests/scripts/milestone1.py
 	python3 tests/scripts/milestone2.py
 	python3 tests/scripts/milestone3.py
+	python3 tests/scripts/milestone4.py
 
 # run tests with optional `mile` variable
 # TODO: add specific test number as well: mile -> mile_id, test_id?

@@ -4,14 +4,15 @@ import os
 
 class TestFileWriter:
     """ A context manager for handling test files. It opens a file in the specified mode and ensures that it is properly closed after use.
-    
+
     ### Attributes:
     - fname (str): The name of the file to be handled.
     - file (file object): The file object that is opened and handled by the context manager.
     """
+
     def __init__(self, n, ext, test_dir=""):
         """ Initializes the TestFileHandler with the specified mode, file number, extension, and optional test directory.
-        
+
         ### Args:
         - n (int): The number to be included in the file name, formatted as a two-digit number.
         - ext (str): The extension of the file (e.g., 'txt', 'csv').
@@ -27,7 +28,7 @@ class TestFileWriter:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """ Ensures that the file is properly closed after use, even if an exception occurs.
-        
+
         ### Args:
         - exc_type: The type of the exception (if any) that occurred within the context.
         - exc_value: The value of the exception (if any) that occurred within the context.
@@ -37,9 +38,11 @@ class TestFileWriter:
             self.file.flush()
             self.file.close()
 
+
 class InputFileWriter(TestFileWriter):
     def __init__(self, n, test_dir=""):
         super().__init__(n, 'dsl', test_dir)
+
 
 class ExpectedFileWriter(TestFileWriter):
     def __init__(self, n, test_dir=""):
@@ -81,3 +84,25 @@ def print_table(pandasArray):
         return ''
     else:
         return pandasArray.to_string(header=False, index=False)
+
+# TODO: clean up below when milestone 4 and 5 are done
+
+
+def openFileHandles(testNum):
+    # if a directory base specified, we want to add the trailing separator `/`
+    input_dir = "tests/input/"
+    exp_dir = "tests/expected/"
+    if testNum < 10:
+        output_file = open(input_dir + "test0{}gen.dsl".format(testNum), "w")
+        exp_output_file = open(exp_dir + "test0{}gen.exp".format(testNum), "w")
+    else:
+        output_file = open(input_dir + "test{}gen.dsl".format(testNum), "w")
+        exp_output_file = open(exp_dir + "test{}gen.exp".format(testNum), "w")
+    return output_file, exp_output_file
+
+
+def closeFileHandles(output_file, exp_output_file):
+    output_file.flush()
+    exp_output_file.flush()
+    output_file.close()
+    exp_output_file.close()

@@ -356,6 +356,8 @@ def test9(table, selectivity):
 
 
 def main():
+    np.random.seed(0)  # for reproducibility
+
     # make tables
     table1 = generate_simple_table(1000)
     table2 = generate_complex_table(10000)
