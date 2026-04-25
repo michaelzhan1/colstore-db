@@ -3,7 +3,7 @@
 // Initialize the components of a hashtable.
 // The size parameter is the expected number of elements to be inserted.
 // This method returns an error code, 0 for success and -1 otherwise (e.g., if the parameter passed to the method is not null, if malloc fails, etc).
-int allocate(hashtable** ht, int size) {
+int allocate(HashTable** ht, int size) {
     // The next line tells the compiler that we know we haven't used the variable
     // yet so don't issue a warning. You should remove this line once you use
     // the parameter.
@@ -14,7 +14,7 @@ int allocate(hashtable** ht, int size) {
 
 // This method inserts a key-value pair into the hash table.
 // It returns an error code, 0 for success and -1 otherwise (e.g., if malloc is called and fails).
-int put(hashtable* ht, keyType key, valType value) {
+int put(HashTable* ht, key_type key, val_type value) {
     (void) ht;
     (void) key;
     (void) value;
@@ -29,7 +29,7 @@ int put(hashtable* ht, keyType key, valType value) {
 // num_values, the caller can invoke this function again (with a larger buffer)
 // to get values that it missed during the first call. 
 // This method returns an error code, 0 for success and -1 otherwise (e.g., if the hashtable is not allocated).
-int get(hashtable* ht, keyType key, valType *values, int num_values, int* num_results) {
+int get(HashTable* ht, key_type key, val_type *values, int num_values, int* num_results) {
     (void) ht;
     (void) key;
     (void) values;
@@ -40,7 +40,7 @@ int get(hashtable* ht, keyType key, valType *values, int num_values, int* num_re
 
 // This method erases all key-value pairs with a given key from the hash table.
 // It returns an error code, 0 for success and -1 otherwise (e.g., if the hashtable is not allocated).
-int erase(hashtable* ht, keyType key) {
+int erase(HashTable* ht, key_type key) {
     (void) ht;
     (void) key;
     return 0;
@@ -48,7 +48,7 @@ int erase(hashtable* ht, keyType key) {
 
 // This method frees all memory occupied by the hash table.
 // It returns an error code, 0 for success and -1 otherwise.
-int deallocate(hashtable* ht) {
+int deallocate(HashTable* ht) {
     // This line tells the compiler that we know we haven't used the variable
     // yet so don't issue a warning. You should remove this line once you use
     // the parameter.

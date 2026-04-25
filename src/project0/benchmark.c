@@ -15,7 +15,7 @@
 
 int main(void) {
 
-  hashtable* ht=NULL;
+  HashTable* ht=NULL;
   int num_tests = 50000000;
   int failure = allocate(&ht, num_tests);
   assert(!failure);

@@ -32,3 +32,8 @@ client
 .venv
 
 .DS_Store
+
+# Project 0
+src/project0/main
+src/project0/test
+src/project0/benchmark

@@ -12,15 +12,15 @@
 
 int main(void) {
 
-  hashtable* ht=NULL;
+  HashTable* ht=NULL;
   int num_tests = 20;
   int failure = allocate(&ht, num_tests);
   assert(!failure);
 
   int seed = 1;
   srand(seed);
-  keyType keys[num_tests];
-  valType values[num_tests];
+  key_type keys[num_tests];
+  val_type values[num_tests];
 
   printf("Testing putting and getting from the hash table.\n");
   printf("Inserting %d key-value pairs.\n", num_tests);
@@ -37,7 +37,7 @@ int main(void) {
   int num_results = 0;
 
   for (int i = 0; i < num_tests; i += 1) {
-    keyType target_key = keys[i];
+    key_type target_key = keys[i];
     failure = get(ht, target_key, results, num_values, &num_results);
     assert(!failure);
     if (results[0] != values[i]) {
@@ -50,7 +50,7 @@ int main(void) {
   printf("Now testing erasing.\n");
 
   for (int i = 0; i < num_tests; i += 1) {
-    keyType target_key = keys[i];
+    key_type target_key = keys[i];
     failure = erase(ht, target_key);
     assert(!failure);
     failure = get(ht, target_key, results, num_values, &num_results);  

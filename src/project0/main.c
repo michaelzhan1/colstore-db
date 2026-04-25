@@ -7,7 +7,7 @@
 // implementation. 
 int main(void) {
 
-  hashtable *ht = NULL;
+  HashTable *ht = NULL;
   int size = 10;
   allocate(&ht, size);
 
@@ -18,13 +18,13 @@ int main(void) {
 
   int num_values = 1;
 
-  valType* values = malloc(sizeof(valType));
+  val_type* values = malloc(sizeof(val_type));
 
   int num_results = 0;
 
   get(ht, key, values, num_values, &num_results);
   if (num_results > num_values) {
-    values = realloc(values, num_results * sizeof(valType));
+    values = realloc(values, num_results * sizeof(val_type));
     get(ht, 0, values, num_values, &num_results);
   }
 
