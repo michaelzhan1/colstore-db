@@ -3,38 +3,31 @@
 
 #include "hash_table.h"
 
-// This is where you can implement your own tests for the hash table
-// implementation. 
-int main(void) {
-
-  HashTable *ht = NULL;
-  int size = 10;
-  allocate(&ht, size);
+int main(void)
+{
+  HashTable *ht = ht_create(10);
 
   int key = 0;
   int value = -1;
+  ht_put(ht, key, value);
 
-  put(ht, key, value);
-
-  int num_values = 1;
-
-  val_type* values = malloc(sizeof(val_type));
-
-  int num_results = 0;
-
-  get(ht, key, values, num_values, &num_results);
-  if (num_results > num_values) {
+  size_t num_values = 1;
+  val_type *values = malloc(sizeof(*values));
+  size_t num_results = 0;
+  ht_get(ht, key, values, num_values, &num_results);
+  if (num_results > num_values)
+  {
     values = realloc(values, num_results * sizeof(val_type));
-    get(ht, 0, values, num_values, &num_results);
+    ht_get(ht, key, values, num_values, &num_results);
   }
 
-  for (int i = 0; i < num_results; i++) {
-    printf("value %d is %d \n", i, values[i]);
+  for (size_t i = 0; i < num_results; i++)
+  {
+    printf("value %zu is %d \n", i, values[i]);
   }
   free(values);
 
-  erase(ht, 0);
-
-  deallocate(ht);
+  ht_delete(ht, 0);
+  ht_free(ht);
   return 0;
 }

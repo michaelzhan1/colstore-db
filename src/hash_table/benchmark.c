@@ -17,7 +17,7 @@ int main(void) {
 
   HashTable* ht=NULL;
   int num_tests = 50000000;
-  int failure = allocate(&ht, num_tests);
+  int failure = ht_init(&ht, num_tests);
   assert(!failure);
 
   int seed = 2;
@@ -38,7 +38,7 @@ int main(void) {
   double secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec); 
   printf("50 million insertions took %f seconds\n", secs);
 
-  failure = deallocate(ht);
+  failure = ht_free(ht);
   assert(!failure);
 
   return 0;

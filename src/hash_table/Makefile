@@ -21,7 +21,8 @@ MAIN_BIN := $(BINDIR)/main
 TEST_BIN := $(BINDIR)/test
 BENCHMARK_BIN := $(BINDIR)/benchmark
 
-OBJECTS := hash_table.o main.o test.o benchmark.o
+# objects needed for dependencies
+OBJECTS := hash_table.o list_node.o value_array.o
 OBJFILES := $(addprefix $(OBJDIR)/,$(OBJECTS))
 
 ####### Automatic dependency magic #######
@@ -46,21 +47,21 @@ $(OBJDIR)/%.o : %.c $(BUILDSTAMP)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -O$(O) -o $@ -c $<
 
 main: $(MAIN_BIN)
-$(MAIN_BIN): $(OBJDIR)/hash_table.o $(OBJDIR)/main.o
+$(MAIN_BIN): $(OBJFILES) $(OBJDIR)/main.o
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 test: $(TEST_BIN)
-$(TEST_BIN): $(OBJDIR)/hash_table.o $(OBJDIR)/test.o
+$(TEST_BIN): $(OBJFILES) $(OBJDIR)/test.o
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 benchmark: $(BENCHMARK_BIN)
-$(BENCHMARK_BIN): $(OBJDIR)/hash_table.o $(OBJDIR)/benchmark.o
+$(BENCHMARK_BIN): $(OBJFILES) $(OBJDIR)/benchmark.o
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 clean:
-	rm -rf $(OBJDIR) $(DEPSDIR) $(MAIN_BIN) $(TEST_BIN) $(BENCHMARK_BIN) *~ *.bak core *.core
+	rm -rf $(BUILD_DIR) *~ *.bak core *.core
 
 .PHONY: all main test benchmark clean
