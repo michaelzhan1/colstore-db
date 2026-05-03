@@ -3,14 +3,17 @@ TEST_INPUT = tests/input
 TEST_OUTPUT = tests/output
 TEST_EXPECTED = tests/expected
 
+DOCKER_STAMP = .docker_build_stamp
+
 build:
 	$(MAKE) -C src
 
-build-image:
+$(DOCKER_STAMP): Dockerfile
 	docker build --tag=colstore-db .
+	touch $@
 
 # down not needed due to --rm
-up:
+up: $(DOCKER_STAMP)
 	docker container run \
 		--name db \
 		--rm \

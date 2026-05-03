@@ -1,44 +1,37 @@
-#include <sys/time.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
 
 #include "hash_table.h"
 
-// This code is designed to stress test your hash table implementation. You do
-// not need to significantly change it, but you may want to vary the value of
-// num_tests to control the amount of time and memory that benchmarking takes
-// up. Compile and run it in the command line by typing:
-// make benchmark; ./benchmark
+int main(void)
+{
+  size_t num_tests = 50000000; // 50,000,000
 
-
-
-int main(void) {
-
-  HashTable* ht=NULL;
-  int num_tests = 50000000;
-  int failure = ht_init(&ht, num_tests);
-  assert(!failure);
+  HashTable *ht = ht_create(num_tests);
+  assert(ht != NULL);
 
   int seed = 2;
   srand(seed);
-  printf("Performing stress test. Inserting 50 million keys.\n");
+  printf("Performing stress test. Inserting %zu keys.\n", num_tests);
 
   struct timeval stop, start;
   gettimeofday(&start, NULL);
 
-  for (int i = 0; i < num_tests; i += 1) {
+  for (size_t i = 0; i < num_tests; i++)
+  {
     int key = rand();
     int val = rand();
-    failure = put(ht, key, val);
+    int failure = ht_put(ht, key, val);
     assert(!failure);
   }
 
   gettimeofday(&stop, NULL);
-  double secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec); 
-  printf("50 million insertions took %f seconds\n", secs);
+  double secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+  printf("%zu insertions took %f seconds\n", num_tests, secs);
 
-  failure = ht_free(ht);
+  int failure = ht_free(ht);
   assert(!failure);
 
   return 0;

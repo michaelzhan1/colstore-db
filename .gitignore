@@ -37,3 +37,5 @@ client
 src/project0/main
 src/project0/test
 src/project0/benchmark
+
+.docker_build_stamp
