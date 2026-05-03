@@ -78,7 +78,7 @@ HashTable *ht_create(size_t expected_size)
     return ht;
 }
 
-int ht_put(HashTable *ht, key_type key, val_type value)
+int ht_insert(HashTable *ht, key_type key, val_type value)
 {
     if (!ht)
     {
@@ -157,6 +157,7 @@ int ht_delete(HashTable *ht, key_type key)
     return 0;
 }
 
+// TODO: make void
 int ht_free(HashTable *ht)
 {
     if (!ht)

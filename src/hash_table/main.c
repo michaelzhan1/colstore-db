@@ -7,8 +7,8 @@ int main(void)
 {
   HashTable *ht = ht_create(10);
 
-  ht_put(ht, 0, -1);
-  ht_put(ht, 0, -2);
+  ht_insert(ht, 0, -1);
+  ht_insert(ht, 0, -2);
 
   size_t num_values = 1;
   val_type *values = malloc(sizeof(*values));

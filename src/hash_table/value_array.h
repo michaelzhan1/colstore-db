@@ -28,6 +28,16 @@ int va_init(ValueArray *arr, size_t initial_capacity);
 void va_free(ValueArray *arr);
 
 /**
+ * Resizes the ValueArray to the new capacity.
+ * If the new capacity is smaller than the current size, then returns -1.
+ * 
+ * @param arr Pointer to the ValueArray to resize.
+ * @param new_capacity The new capacity for the ValueArray.
+ * @return 0 on success, -1 on failure (e.g., if new_capacity is smaller than current size or if memory allocation fails).
+ */
+int va_resize(ValueArray *arr, size_t new_capacity);
+
+/**
  * Push a value to the end of the ValueArray.
  * Will resize if necessary. Returns 0 on success and -1 on failure (e.g., if memory allocation fails).
  * 

@@ -37,7 +37,7 @@ HashTable *ht_create(size_t expected_size);
  * @param value The value to associate with the key.
  * @return 0 on success, -1 on failure
  */
-int ht_put(HashTable *ht, key_type key, val_type value);
+int ht_insert(HashTable *ht, key_type key, val_type value);
 
 /**
  * Retrieves values associated with a given key from the hash table.

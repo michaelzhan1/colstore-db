@@ -26,7 +26,7 @@ int main(void) {
   for (size_t i = 0; i < num_tests; i += 1) {
     keys[i] = rand();
     values[i] = rand();
-    int failure = ht_put(ht, keys[i], values[i]);
+    int failure = ht_insert(ht, keys[i], values[i]);
     assert(!failure);
     printf("\t(%d -> %d) \n", keys[i], values[i]);
   }
